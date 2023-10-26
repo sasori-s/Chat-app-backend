@@ -19,34 +19,25 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['email', 'password', 'first_name', 'last_name']
         extra_kwargs = {'password': {'write_only':True}}
 
-class LoginSerialzer(serializers.Serializer):
+class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    id = serializers.CharField(max_length=15, read_only=True)
-    password = serializers.CharField(max_length=255, write_only=True)
+    id = serializers.CharField(read_only = True)
+    password = serializers.CharField(write_only = True)
 
-    def validate(self, data):
-        email = data.get("email", None)
-        password = data.get("password", None)
+    def validate(self, attrs):
+        email = attrs.get('email',None)
+        password = attrs.get('password', None)
 
         if email is None:
-            raise serializers.ValidationError("An email address is required for login")
-        
+            raise serializers.ValidationError('email required')
         if password is None:
-            raise serializers.ValidationError("An password is required for login")
-        
-        user = authenticate(username=email, password=password)
+            raise serializers.ValidationError('password is required')
+        user = authenticate(username = email, password = password)
 
         if user is None:
-            raise serializers.ValidationError(
-                "Invalid Email or Password"
-            )
-        
-        if not user.is_active:
-            raise serializers.ValidationError(
-                "User is inactive"
-            )
+            raise ValueError('Invalid email or password')
         
         return {
-            "email": user.email,
-            "id": user.id
+            'email' : user.email,
+            'id' : user.id
         }
